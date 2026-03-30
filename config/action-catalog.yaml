@@ -1,0 +1,68 @@
+# Action Catalog - Templates for candidate action generation
+actions:
+  horizontal_scale_up:
+    type: horizontal_scale
+    description_template: "Scale {service} by +{n} replicas"
+    parameters:
+      n: [1, 2, 3, 5]
+    default_blast_radius: 0.05
+    default_reversibility: 0.95
+    applicable_when:
+      - high_latency
+      - high_cpu
+      - high_memory
+
+  horizontal_scale_down:
+    type: horizontal_scale
+    description_template: "Scale {service} by -{n} replicas"
+    parameters:
+      n: [1, 2]
+    default_blast_radius: 0.10
+    default_reversibility: 0.90
+    applicable_when:
+      - low_utilization
+      - cost_optimization
+
+  rate_limit:
+    type: rate_limit
+    description_template: "Set rate limit on {endpoint} to {rps} RPS"
+    parameters:
+      rps: [100, 500, 1000, 5000]
+    default_blast_radius: 0.15
+    default_reversibility: 0.98
+    applicable_when:
+      - high_request_rate
+      - overload
+
+  circuit_break:
+    type: circuit_break
+    description_template: "Trip circuit breaker for {service}, half-open after {recovery_seconds}s"
+    parameters:
+      recovery_seconds: [30, 60, 120]
+    default_blast_radius: 0.20
+    default_reversibility: 0.85
+    applicable_when:
+      - high_error_rate
+      - cascading_failure
+
+  traffic_shift:
+    type: traffic_shift
+    description_template: "Shift {percent}% traffic from {source} to {destination}"
+    parameters:
+      percent: [10, 25, 50]
+    default_blast_radius: 0.15
+    default_reversibility: 0.95
+    applicable_when:
+      - regional_degradation
+      - canary_rollback
+
+  connection_pool_resize:
+    type: resource_realloc
+    description_template: "Resize {service} connection pool from {current} to {target}"
+    parameters:
+      increase_factor: [1.25, 1.5, 2.0]
+    default_blast_radius: 0.05
+    default_reversibility: 0.90
+    applicable_when:
+      - connection_pool_saturation
+      - high_latency

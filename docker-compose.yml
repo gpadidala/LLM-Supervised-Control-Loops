@@ -1,0 +1,120 @@
+services:
+  backend:
+    build: ./backend
+    container_name: scl-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - PROMETHEUS_URL=http://prometheus:9090
+      - REDIS_URL=redis://redis:6379/0
+      - LLM_PROVIDER=${LLM_PROVIDER:-anthropic}
+      - LLM_MODEL=${LLM_MODEL:-claude-sonnet-4-20250514}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - CONTROL_CYCLE_INTERVAL=${CONTROL_CYCLE_INTERVAL:-15}
+      - SIMULATION_SCENARIOS=${SIMULATION_SCENARIOS:-100}
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL:-}
+      - PAGERDUTY_API_KEY=${PAGERDUTY_API_KEY:-}
+      - DEBUG=${DEBUG:-false}
+    volumes:
+      - ./config:/app/config:ro
+    depends_on:
+      redis:
+        condition: service_healthy
+      prometheus:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - scl-net
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: scl-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - scl-net
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: scl-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - redis-data:/data
+    networks:
+      - scl-net
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v3.1.0
+    container_name: scl-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/rules:/etc/prometheus/rules:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=7d'
+      - '--web.enable-lifecycle'
+      - '--web.enable-remote-write-receiver'
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+    networks:
+      - scl-net
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    container_name: scl-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=sclgovernor
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - scl-net
+    restart: unless-stopped
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    container_name: scl-node-exporter
+    ports:
+      - "9100:9100"
+    networks:
+      - scl-net
+    restart: unless-stopped
+
+volumes:
+  redis-data:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  scl-net:
+    driver: bridge

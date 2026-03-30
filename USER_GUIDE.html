@@ -1,0 +1,2030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCL-Governor User Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-tertiary: #334155;
+      --border: #475569;
+      --border-subtle: #334155;
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --blue-500: #3b82f6;
+      --blue-400: #60a5fa;
+      --blue-600: #2563eb;
+      --green-400: #4ade80;
+      --green-500: #22c55e;
+      --yellow-400: #facc15;
+      --yellow-500: #eab308;
+      --red-400: #f87171;
+      --red-500: #ef4444;
+      --purple-400: #c084fc;
+      --purple-500: #a855f7;
+      --sidebar-width: 260px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    /* Sidebar Navigation */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: var(--sidebar-width);
+      height: 100vh;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-subtle);
+      overflow-y: auto;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-brand {
+      padding: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sidebar-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--blue-500), var(--purple-500));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .sidebar-brand-text { line-height: 1.3; }
+    .sidebar-brand-title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+    .sidebar-brand-sub { font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-dim); }
+
+    .sidebar-nav { flex: 1; padding: 12px; overflow-y: auto; }
+
+    .sidebar-nav a {
+      display: block;
+      padding: 8px 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 8px;
+      transition: all 0.2s;
+      margin-bottom: 2px;
+    }
+
+    .sidebar-nav a:hover {
+      color: var(--text-primary);
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    .sidebar-nav a.section-title {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-dim);
+      margin-top: 16px;
+      margin-bottom: 4px;
+      padding: 4px 12px;
+      cursor: default;
+    }
+
+    .sidebar-nav a.section-title:hover { background: none; color: var(--text-dim); }
+
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid var(--border-subtle);
+      text-align: center;
+    }
+
+    .sidebar-footer span {
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+
+    /* Main Content */
+    .main {
+      margin-left: var(--sidebar-width);
+      min-height: 100vh;
+    }
+
+    /* Hero Header */
+    .hero {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(168, 85, 247, 0.1) 50%, rgba(15, 23, 42, 0) 100%);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 60px 48px;
+    }
+
+    .hero h1 {
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+
+    .hero .subtitle {
+      font-size: 16px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .version-badge {
+      display: inline-block;
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: var(--blue-400);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Content Container */
+    .content { max-width: 900px; padding: 48px; }
+
+    /* Sections */
+    section { margin-bottom: 64px; scroll-margin-top: 24px; }
+
+    section h2 {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+      letter-spacing: -0.3px;
+    }
+
+    section h2 .section-num {
+      color: var(--blue-400);
+      margin-right: 8px;
+    }
+
+    section .section-lead {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      color: var(--text-secondary);
+    }
+
+    h4 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+    }
+
+    p { margin-bottom: 14px; color: var(--text-secondary); }
+
+    /* Cards */
+    .card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .card-gradient {
+      background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(59, 130, 246, 0.05) 100%);
+    }
+
+    .card h4 { margin-top: 0; }
+
+    /* Info/Tip Boxes */
+    .info-box {
+      border-left: 3px solid var(--blue-500);
+      background: rgba(59, 130, 246, 0.08);
+      padding: 16px 20px;
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+    }
+
+    .info-box p { margin-bottom: 0; }
+    .info-box .label { font-weight: 600; color: var(--blue-400); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+
+    .warn-box {
+      border-left: 3px solid var(--yellow-500);
+      background: rgba(234, 179, 8, 0.08);
+      padding: 16px 20px;
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+    }
+
+    .warn-box .label { font-weight: 600; color: var(--yellow-400); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+
+    /* Code Blocks */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(59, 130, 246, 0.12);
+      color: var(--blue-400);
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-size: 13px;
+    }
+
+    pre {
+      background: #0d1117;
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 20px;
+      overflow-x: auto;
+      margin: 16px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+    }
+
+    pre code { background: none; padding: 0; color: inherit; }
+
+    /* Numbered Steps */
+    .steps { counter-reset: step-counter; }
+
+    .step {
+      counter-increment: step-counter;
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      align-items: flex-start;
+    }
+
+    .step::before {
+      content: counter(step-counter);
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue-500), var(--purple-500));
+      color: white;
+      font-weight: 700;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+    }
+
+    .step-content { flex: 1; }
+    .step-content h4 { margin-top: 4px; margin-bottom: 6px; }
+    .step-content p { margin-bottom: 8px; }
+
+    /* Lists */
+    ul, ol { margin: 12px 0 12px 24px; color: var(--text-secondary); }
+    li { margin-bottom: 6px; }
+
+    /* Architecture Diagram (CSS) */
+    .arch-diagram {
+      background: #0d1117;
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 32px;
+      margin: 24px 0;
+      overflow-x: auto;
+    }
+
+    .arch-loop {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      flex-wrap: nowrap;
+    }
+
+    .arch-phase {
+      text-align: center;
+      padding: 14px 18px;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      min-width: 110px;
+      position: relative;
+    }
+
+    .arch-phase .phase-num { font-size: 10px; color: var(--text-dim); font-weight: 600; margin-bottom: 4px; }
+    .arch-phase .phase-name { font-size: 14px; font-weight: 700; }
+    .arch-phase .phase-desc { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+
+    .arch-phase.p-observe { background: rgba(59, 130, 246, 0.12); border-color: rgba(59, 130, 246, 0.3); }
+    .arch-phase.p-observe .phase-name { color: var(--blue-400); }
+
+    .arch-phase.p-predict { background: rgba(168, 85, 247, 0.12); border-color: rgba(168, 85, 247, 0.3); }
+    .arch-phase.p-predict .phase-name { color: var(--purple-400); }
+
+    .arch-phase.p-simulate { background: rgba(234, 179, 8, 0.12); border-color: rgba(234, 179, 8, 0.3); }
+    .arch-phase.p-simulate .phase-name { color: var(--yellow-400); }
+
+    .arch-phase.p-decide { background: rgba(34, 197, 94, 0.12); border-color: rgba(34, 197, 94, 0.3); }
+    .arch-phase.p-decide .phase-name { color: var(--green-400); }
+
+    .arch-phase.p-actuate { background: rgba(248, 113, 113, 0.12); border-color: rgba(248, 113, 113, 0.3); }
+    .arch-phase.p-actuate .phase-name { color: var(--red-400); }
+
+    .arch-phase.p-learn { background: rgba(96, 165, 250, 0.12); border-color: rgba(96, 165, 250, 0.3); }
+    .arch-phase.p-learn .phase-name { color: #93c5fd; }
+
+    .arch-arrow {
+      color: var(--text-dim);
+      font-size: 20px;
+      padding: 0 6px;
+      flex-shrink: 0;
+    }
+
+    .arch-feedback {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 11px;
+      color: var(--text-dim);
+      font-style: italic;
+    }
+
+    /* Wireframe Mockups */
+    .wireframe {
+      background: #0d1117;
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 20px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+    }
+
+    .wireframe-header {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .wireframe-header .wf-title {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 13px;
+    }
+
+    .wireframe-header .wf-badge {
+      background: rgba(59, 130, 246, 0.2);
+      color: var(--blue-400);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+    }
+
+    .wireframe-content { padding: 16px; }
+
+    .wireframe-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .wireframe-card {
+      flex: 1;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 10px 12px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .wireframe-card .wf-label { font-size: 9px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 4px; }
+    .wireframe-card .wf-value { font-size: 16px; font-weight: 700; }
+    .wireframe-card .wf-value.green { color: var(--green-400); }
+    .wireframe-card .wf-value.blue { color: var(--blue-400); }
+    .wireframe-card .wf-value.yellow { color: var(--yellow-400); }
+    .wireframe-card .wf-value.red { color: var(--red-400); }
+
+    .wireframe-chart {
+      flex: 1;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 10px 12px;
+      color: var(--text-muted);
+      min-height: 50px;
+    }
+
+    .wireframe-chart .wf-chart-label { font-size: 9px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; }
+
+    .wireframe-panel {
+      flex: 1;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 12px;
+      color: var(--text-muted);
+    }
+
+    .wireframe-panel .wf-panel-title { font-size: 10px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; font-weight: 600; }
+
+    .wireframe-sidebar {
+      width: 56px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 0;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .wireframe-sidebar-item {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: var(--bg-tertiary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dim);
+      font-size: 12px;
+    }
+
+    .wireframe-sidebar-item.active { background: rgba(59, 130, 246, 0.2); color: var(--blue-400); }
+
+    .wireframe-bar {
+      height: 6px;
+      border-radius: 3px;
+      margin-bottom: 4px;
+    }
+
+    .wireframe-input {
+      width: 100%;
+      background: #0d1117;
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      padding: 6px 8px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+
+    .wireframe-btn {
+      display: inline-block;
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: var(--blue-400);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 10px;
+      margin-right: 4px;
+    }
+
+    .wireframe-btn.green {
+      background: rgba(34, 197, 94, 0.2);
+      border-color: rgba(34, 197, 94, 0.3);
+      color: var(--green-400);
+    }
+
+    .wireframe-btn.red {
+      background: rgba(248, 113, 113, 0.2);
+      border-color: rgba(248, 113, 113, 0.3);
+      color: var(--red-400);
+    }
+
+    .wireframe-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      margin-right: 4px;
+    }
+
+    .wireframe-check {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: rgba(34, 197, 94, 0.3);
+      border: 1px solid var(--green-400);
+      text-align: center;
+      line-height: 12px;
+      color: var(--green-400);
+      font-size: 9px;
+      vertical-align: middle;
+      margin-right: 4px;
+    }
+
+    .wireframe-x {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: rgba(248, 113, 113, 0.3);
+      border: 1px solid var(--red-400);
+      text-align: center;
+      line-height: 12px;
+      color: var(--red-400);
+      font-size: 9px;
+      vertical-align: middle;
+      margin-right: 4px;
+    }
+
+    /* Regime bars */
+    .regime-bar {
+      display: flex;
+      height: 20px;
+      border-radius: 4px;
+      overflow: hidden;
+      gap: 1px;
+    }
+
+    .regime-bar .bar-segment {
+      flex: 1;
+      min-width: 3px;
+    }
+
+    /* Sparkline via CSS */
+    .sparkline {
+      display: flex;
+      align-items: flex-end;
+      height: 30px;
+      gap: 2px;
+    }
+
+    .sparkline .spark-bar {
+      flex: 1;
+      background: var(--blue-500);
+      border-radius: 2px 2px 0 0;
+      opacity: 0.7;
+    }
+
+    /* API Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+    }
+
+    th {
+      text-align: left;
+      padding: 10px 14px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+      border-bottom: 1px solid var(--border-subtle);
+      font-weight: 600;
+    }
+
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    td:first-child { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+    td:nth-child(2) { font-family: 'JetBrains Mono', monospace; color: var(--blue-400); }
+
+    tr:hover td { background: rgba(59, 130, 246, 0.04); }
+
+    .method-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .method-get { background: rgba(34, 197, 94, 0.15); color: var(--green-400); }
+    .method-post { background: rgba(59, 130, 246, 0.15); color: var(--blue-400); }
+    .method-put { background: rgba(234, 179, 8, 0.15); color: var(--yellow-400); }
+    .method-delete { background: rgba(248, 113, 113, 0.15); color: var(--red-400); }
+
+    /* Capability Grid */
+    .capability-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .capability-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 14px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+    }
+
+    .capability-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .capability-item h4 { margin: 0 0 4px 0; font-size: 13px; }
+    .capability-item p { margin: 0; font-size: 12px; color: var(--text-dim); }
+
+    /* Autonomy Levels */
+    .autonomy-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .autonomy-card {
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid;
+    }
+
+    .autonomy-card h4 { margin: 0 0 6px 0; }
+    .autonomy-card p { margin: 0; font-size: 12px; }
+
+    .autonomy-card.auto { background: rgba(34, 197, 94, 0.08); border-color: rgba(34, 197, 94, 0.3); }
+    .autonomy-card.auto h4 { color: var(--green-400); }
+
+    .autonomy-card.notify { background: rgba(59, 130, 246, 0.08); border-color: rgba(59, 130, 246, 0.3); }
+    .autonomy-card.notify h4 { color: var(--blue-400); }
+
+    .autonomy-card.recommend { background: rgba(234, 179, 8, 0.08); border-color: rgba(234, 179, 8, 0.3); }
+    .autonomy-card.recommend h4 { color: var(--yellow-400); }
+
+    .autonomy-card.escalate { background: rgba(248, 113, 113, 0.08); border-color: rgba(248, 113, 113, 0.3); }
+    .autonomy-card.escalate h4 { color: var(--red-400); }
+
+    /* FAQ */
+    .faq-item {
+      margin-bottom: 20px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    .faq-q {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .faq-a { color: var(--text-muted); font-size: 13px; }
+    .faq-a p { margin-bottom: 4px; }
+
+    /* Footer */
+    .page-footer {
+      margin-left: var(--sidebar-width);
+      border-top: 1px solid var(--border-subtle);
+      padding: 32px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(168, 85, 247, 0.1);
+      border: 1px solid rgba(168, 85, 247, 0.25);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--purple-400);
+      font-weight: 500;
+    }
+
+    .footer-links a {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 13px;
+      margin-left: 24px;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--blue-400); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: var(--bg-tertiary); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--border); }
+
+    /* Utility */
+    .flex { display: flex; }
+    .gap-8 { gap: 8px; }
+    .mt-4 { margin-top: 16px; }
+    .mt-2 { margin-top: 8px; }
+    .mb-2 { margin-bottom: 8px; }
+    .text-center { text-align: center; }
+    .text-dim { color: var(--text-dim); }
+    .text-sm { font-size: 13px; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body>
+
+<!-- ==================== SIDEBAR ==================== -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-logo">S</div>
+    <div class="sidebar-brand-text">
+      <div class="sidebar-brand-title">SCL-Governor</div>
+      <div class="sidebar-brand-sub">User Guide</div>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="#overview">Overview</a>
+    <a href="#quick-start">Quick Start</a>
+    <a href="#onboarding" style="color: var(--blue-400); font-weight: 600;">Onboarding Your App</a>
+
+    <a class="section-title" href="#">Pages</a>
+    <a href="#dashboard">Dashboard</a>
+    <a href="#control-loop">Control Loop</a>
+    <a href="#telemetry">Telemetry</a>
+    <a href="#predictions">Predictions</a>
+    <a href="#simulations">Simulations</a>
+    <a href="#decisions">Decisions</a>
+    <a href="#learning">Learning</a>
+    <a href="#settings">Settings</a>
+
+    <a class="section-title" href="#">Reference</a>
+    <a href="#api-reference">API Reference</a>
+    <a href="#troubleshooting">Troubleshooting</a>
+  </nav>
+  <div class="sidebar-footer">
+    <span>LLM-Supervised Control Loops v1.0</span>
+  </div>
+</aside>
+
+<!-- ==================== MAIN ==================== -->
+<main class="main">
+
+<!-- Hero Header -->
+<div class="hero">
+  <h1>SCL-Governor User Guide</h1>
+  <p class="subtitle">LLM-Supervised Control Loops &mdash; Autonomous Infrastructure Governor</p>
+  <span class="version-badge">v1.0.0</span>
+</div>
+
+<div class="content">
+
+<!-- ==================== SECTION 1: OVERVIEW ==================== -->
+<section id="overview">
+  <h2><span class="section-num">01</span> Overview</h2>
+  <p class="section-lead">Understanding the SCL-Governor and the autonomous control loop architecture.</p>
+
+  <h3>What is SCL-Governor?</h3>
+  <p>
+    SCL-Governor is an autonomous infrastructure management system that uses an LLM (Large Language Model) as the
+    supervisory intelligence for a continuous control loop. It monitors your applications and infrastructure in real time,
+    predicts issues before they happen, simulates corrective actions, and makes intelligent decisions about whether to
+    act autonomously or involve a human.
+  </p>
+  <p>
+    Think of it as a tireless SRE that watches your systems 24/7, reasons about their health, and takes the best
+    available action at every moment &mdash; all while learning from the outcomes to get better over time.
+  </p>
+
+  <h3>The 6-Phase Control Loop</h3>
+  <p>Every control cycle runs through six phases in sequence:</p>
+
+  <!-- Architecture Diagram -->
+  <div class="arch-diagram">
+    <div class="arch-loop">
+      <div class="arch-phase p-observe">
+        <div class="phase-num">Phase 1</div>
+        <div class="phase-name">Observe</div>
+        <div class="phase-desc">Collect telemetry</div>
+      </div>
+      <div class="arch-arrow">&rarr;</div>
+      <div class="arch-phase p-predict">
+        <div class="phase-num">Phase 2</div>
+        <div class="phase-name">Predict</div>
+        <div class="phase-desc">Forecast risks</div>
+      </div>
+      <div class="arch-arrow">&rarr;</div>
+      <div class="arch-phase p-simulate">
+        <div class="phase-num">Phase 3</div>
+        <div class="phase-name">Simulate</div>
+        <div class="phase-desc">Monte Carlo sims</div>
+      </div>
+      <div class="arch-arrow">&rarr;</div>
+      <div class="arch-phase p-decide">
+        <div class="phase-num">Phase 4</div>
+        <div class="phase-name">Decide</div>
+        <div class="phase-desc">LLM reasoning</div>
+      </div>
+      <div class="arch-arrow">&rarr;</div>
+      <div class="arch-phase p-actuate">
+        <div class="phase-num">Phase 5</div>
+        <div class="phase-name">Actuate</div>
+        <div class="phase-desc">Execute actions</div>
+      </div>
+      <div class="arch-arrow">&rarr;</div>
+      <div class="arch-phase p-learn">
+        <div class="phase-num">Phase 6</div>
+        <div class="phase-name">Learn</div>
+        <div class="phase-desc">Update models</div>
+      </div>
+    </div>
+    <div class="arch-feedback">&larr;&larr;&larr; continuous feedback loop &larr;&larr;&larr;</div>
+  </div>
+
+  <ol>
+    <li><strong>Observe</strong> &mdash; Pull telemetry from Prometheus across 5 signal classes (infrastructure, application, business, network, cost). Detect anomalies, compute trend vectors, and determine the system regime.</li>
+    <li><strong>Predict</strong> &mdash; Use statistical models and LLM reasoning to forecast multi-horizon risks: SLA breach probability, cascading failure risk, and cost overruns.</li>
+    <li><strong>Simulate</strong> &mdash; Run Monte Carlo simulations of candidate actions. Compute Pareto frontiers across cost, performance, and risk. Calculate VaR and CVaR metrics.</li>
+    <li><strong>Decide</strong> &mdash; The LLM synthesizes observations, predictions, and simulations to select the optimal action and assign an autonomy level based on confidence.</li>
+    <li><strong>Actuate</strong> &mdash; Execute the chosen action (scaling, rollback, config change, etc.) via Kubernetes or other actuators. Send notifications via Slack or PagerDuty.</li>
+    <li><strong>Learn</strong> &mdash; Track prediction accuracy, simulation fidelity, and reward signals. Detect model drift and store experience in the replay buffer.</li>
+  </ol>
+
+  <h3>Key Capabilities</h3>
+  <div class="capability-grid">
+    <div class="capability-item">
+      <div class="capability-icon" style="background: rgba(59,130,246,0.15); color: var(--blue-400);">&#9678;</div>
+      <div>
+        <h4>Multi-Signal Telemetry</h4>
+        <p>Ingests infrastructure, application, business, network, and cost metrics from Prometheus.</p>
+      </div>
+    </div>
+    <div class="capability-item">
+      <div class="capability-icon" style="background: rgba(168,85,247,0.15); color: var(--purple-400);">&#9733;</div>
+      <div>
+        <h4>LLM-Powered Reasoning</h4>
+        <p>Claude or GPT provides causal analysis, root-cause identification, and natural-language explanations.</p>
+      </div>
+    </div>
+    <div class="capability-item">
+      <div class="capability-icon" style="background: rgba(234,179,8,0.15); color: var(--yellow-400);">&#9651;</div>
+      <div>
+        <h4>Monte Carlo Simulation</h4>
+        <p>Hundreds of scenarios per action candidate. Pareto-optimal selection with risk-aware scoring.</p>
+      </div>
+    </div>
+    <div class="capability-item">
+      <div class="capability-icon" style="background: rgba(34,197,94,0.15); color: var(--green-400);">&#10003;</div>
+      <div>
+        <h4>Graduated Autonomy</h4>
+        <p>Four autonomy levels from full-auto to human escalation, driven by confidence thresholds.</p>
+      </div>
+    </div>
+    <div class="capability-item">
+      <div class="capability-icon" style="background: rgba(248,113,113,0.15); color: var(--red-400);">&#9888;</div>
+      <div>
+        <h4>Safety Constraints</h4>
+        <p>Blast radius limits, cooldown periods, budget ceilings, and minimum replica guards.</p>
+      </div>
+    </div>
+    <div class="capability-item">
+      <div class="capability-icon" style="background: rgba(96,165,250,0.15); color: #93c5fd;">&#8635;</div>
+      <div>
+        <h4>Online Learning</h4>
+        <p>Continuous model improvement with drift detection, prediction accuracy tracking, and replay buffers.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SECTION 2: QUICK START ==================== -->
+<section id="quick-start">
+  <h2><span class="section-num">02</span> Quick Start</h2>
+  <p class="section-lead">Get SCL-Governor running in under 5 minutes.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-content">
+        <h4>Clone and navigate to the project</h4>
+        <pre><code>git clone &lt;repository-url&gt;
+cd LLM-Supervised-Control-Loops-SCL</code></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-content">
+        <h4>Copy the environment template</h4>
+        <pre><code>cp .env.example .env</code></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-content">
+        <h4>Configure your API keys</h4>
+        <p>Open <code>.env</code> and set your LLM provider credentials:</p>
+        <pre><code># Choose one:
+ANTHROPIC_API_KEY=sk-ant-...
+OPENAI_API_KEY=sk-...</code></pre>
+        <div class="info-box">
+          <div class="label">Tip</div>
+          <p>You can skip this step to start in demo mode with synthetic data. You can add your API key later via the Connections page.</p>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-content">
+        <h4>Run setup and start development servers</h4>
+        <pre><code># Install dependencies and start locally
+make setup
+make dev
+
+# Or use Docker Compose for the full stack
+make up</code></pre>
+        <p>Docker Compose will start the backend, frontend, Prometheus, and Grafana together.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-content">
+        <h4>Open the dashboard</h4>
+        <p>Navigate to <code>http://localhost:3000</code> in your browser. The API docs are at <code>http://localhost:8000/docs</code>.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-content">
+        <h4>Onboard your application</h4>
+        <p>Go to the <strong>Connections</strong> page (via the sidebar) to connect your real Prometheus instance and configure monitoring for your services. See the next section for a detailed walkthrough.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SECTION 3: ONBOARDING ==================== -->
+<section id="onboarding">
+  <h2><span class="section-num">03</span> Onboarding Your Application</h2>
+  <p class="section-lead">Step-by-step guide to connecting your real infrastructure to SCL-Governor.</p>
+
+  <div class="info-box">
+    <div class="label">Key Feature</div>
+    <p>The Connections page is the central hub for connecting SCL-Governor to your production or staging infrastructure. Each connection profile bundles Prometheus, Kubernetes, service endpoints, notifications, and LLM configuration together.</p>
+  </div>
+
+  <div class="steps">
+    <!-- Step 1 -->
+    <div class="step">
+      <div class="step-content">
+        <h4>Navigate to the Connections page</h4>
+        <p>Click the Connections icon in the sidebar. You will see the built-in Demo Application card which uses synthetic telemetry data.</p>
+        <!-- Wireframe: Connections page -->
+        <div class="wireframe">
+          <div class="wireframe-header">
+            <span class="wf-title">Connections</span>
+            <span class="wireframe-btn">+ Onboard New Application</span>
+          </div>
+          <div class="wireframe-content">
+            <div class="wireframe-row">
+              <div class="wireframe-panel" style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <span style="color: var(--text-primary); font-weight: 600;">Demo Application</span>
+                  <span class="wireframe-tag" style="background: rgba(34,197,94,0.15); color: var(--green-400);">connected</span>
+                </div>
+                <div style="color: var(--text-dim); font-size: 10px; margin-bottom: 6px;">Built-in demo with synthetic telemetry data</div>
+                <div style="display: flex; gap: 12px; font-size: 10px; color: var(--text-dim);">
+                  <span>Environment: development</span>
+                  <span>Services: 3</span>
+                  <span>Metrics: 25</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step">
+      <div class="step-content">
+        <h4>Click "Onboard New Application"</h4>
+        <p>A multi-step wizard modal opens, walking you through each configuration section.</p>
+        <!-- Wireframe: Wizard modal -->
+        <div class="wireframe">
+          <div class="wireframe-header">
+            <span class="wf-title">Onboard New Application</span>
+            <span style="color: var(--text-dim);">Step 1 of 7</span>
+          </div>
+          <div class="wireframe-content">
+            <div style="display: flex; gap: 6px; margin-bottom: 16px;">
+              <div style="flex:1; height: 3px; background: var(--blue-500); border-radius: 2px;"></div>
+              <div style="flex:1; height: 3px; background: var(--bg-tertiary); border-radius: 2px;"></div>
+              <div style="flex:1; height: 3px; background: var(--bg-tertiary); border-radius: 2px;"></div>
+              <div style="flex:1; height: 3px; background: var(--bg-tertiary); border-radius: 2px;"></div>
+              <div style="flex:1; height: 3px; background: var(--bg-tertiary); border-radius: 2px;"></div>
+              <div style="flex:1; height: 3px; background: var(--bg-tertiary); border-radius: 2px;"></div>
+              <div style="flex:1; height: 3px; background: var(--bg-tertiary); border-radius: 2px;"></div>
+            </div>
+            <div style="color: var(--text-dim); font-size: 10px; margin-bottom: 6px;">BASIC INFO &bull; PROMETHEUS &bull; SERVICES &bull; KUBERNETES &bull; NOTIFICATIONS &bull; LLM &bull; REVIEW</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step">
+      <div class="step-content">
+        <h4>Fill in Basic Info</h4>
+        <p>Provide a name, description, and environment for your application. The environment helps SCL-Governor calibrate its risk tolerance (production is more conservative).</p>
+        <div class="wireframe">
+          <div class="wireframe-header">
+            <span class="wf-title">Step 1: Basic Info</span>
+          </div>
+          <div class="wireframe-content">
+            <div style="margin-bottom: 10px;">
+              <div style="font-size: 10px; color: var(--text-dim); margin-bottom: 4px;">Application Name</div>
+              <div class="wireframe-input">my-ecommerce-platform</div>
+            </div>
+            <div style="margin-bottom: 10px;">
+              <div style="font-size: 10px; color: var(--text-dim); margin-bottom: 4px;">Description</div>
+              <div class="wireframe-input">Production e-commerce stack running on K8s</div>
+            </div>
+            <div style="margin-bottom: 10px;">
+              <div style="font-size: 10px; color: var(--text-dim); margin-bottom: 4px;">Environment</div>
+              <div style="display: flex; gap: 6px;">
+                <span class="wireframe-tag" style="background: var(--bg-tertiary); color: var(--text-dim);">development</span>
+                <span class="wireframe-tag" style="background: var(--bg-tertiary); color: var(--text-dim);">staging</span>
+                <span class="wireframe-tag" style="background: rgba(59,130,246,0.2); color: var(--blue-400); border: 1px solid rgba(59,130,246,0.3);">production</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step">
+      <div class="step-content">
+        <h4>Configure Prometheus</h4>
+        <p>Enter the URL of your Prometheus server. If your Prometheus instance requires authentication, provide the credentials or bearer token. Click <strong>Test Connection</strong> to verify reachability.</p>
+        <div class="wireframe">
+          <div class="wireframe-header">
+            <span class="wf-title">Step 2: Prometheus</span>
+          </div>
+          <div class="wireframe-content">
+            <div style="margin-bottom: 10px;">
+              <div style="font-size: 10px; color: var(--text-dim); margin-bottom: 4px;">Prometheus URL</div>
+              <div class="wireframe-input">https://prometheus.internal.example.com:9090</div>
+            </div>
+            <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+              <div style="flex: 1;">
+                <div style="font-size: 10px; color: var(--text-dim); margin-bottom: 4px;">Username (optional)</div>
+                <div class="wireframe-input">admin</div>
+              </div>
+              <div style="flex: 1;">
+                <div style="font-size: 10px; color: var(--text-dim); margin-bottom: 4px;">Password (optional)</div>
+                <div class="wireframe-input">*********</div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; margin-top: 12px;">
+              <span class="wireframe-btn green">Test Connection</span>
+              <span><span class="wireframe-check">&#10003;</span> <span style="color: var(--green-400); font-size: 10px;">Prometheus is healthy &mdash; 1,247 metrics available</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="step">
+      <div class="step-content">
+        <h4>Add Services and SLO Targets</h4>
+        <p>Add each microservice or application endpoint you want SCL-Governor to monitor. For each service, define SLO targets for latency (p99), error rate, and availability. These targets drive the control loop's decision-making.</p>
+        <div class="wireframe">
+          <div class="wireframe-header">
+            <span class="wf-title">Step 3: Services &amp; SLOs</span>
+            <span class="wireframe-btn">+ Add Service</span>
+          </div>
+          <div class="wireframe-content">
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <!-- Service 1 -->
+              <div style="display: flex; align-items: center; gap: 8px; padding: 8px; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 6px;">
+                <span style="color: var(--text-primary); font-weight: 500; width: 140px;">checkout-svc</span>
+                <span style="color: var(--text-dim); font-size: 10px; width: 80px;">:8080</span>
+                <span style="font-size: 10px; color: var(--blue-400);">p99 &lt; 800ms</span>
+                <span style="font-size: 10px; color: var(--yellow-400);">err &lt; 1.0%</span>
+                <span style="font-size: 10px; color: var(--green-400);">avail &gt; 99.9%</span>
+              </div>
+              <!-- Service 2 -->
+              <div style="display: flex; align-items: center; gap: 8px; padding: 8px; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 6px;">
+                <span style="color: var(--text-primary); font-weight: 500; width: 140px;">payment-svc</span>
+                <span style="color: var(--text-dim); font-size: 10px; width: 80px;">:8081</span>
+                <span style="font-size: 10px; color: var(--blue-400);">p99 &lt; 500ms</span>
+                <span style="font-size: 10px; color: var(--yellow-400);">err &lt; 0.5%</span>
+                <span style="font-size: 10px; color: var(--green-400);">avail &gt; 99.9%</span>
+              </div>
+              <!-- Service 3 -->
+              <div style="display: flex; align-items: center; gap: 8px; padding: 8px; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 6px;">
+                <span style="color: var(--text-primary); font-weight: 500; width: 140px;">inventory-svc</span>
+                <span style="color: var(--text-dim); font-size: 10px; width: 80px;">:8082</span>
+                <span style="font-size: 10px; color: var(--blue-400);">p99 &lt; 600ms</span>
+                <span style="font-size: 10px; color: var(--yellow-400);">err &lt; 1.0%</span>
+                <span style="font-size: 10px; color: var(--green-400);">avail &gt; 99.9%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 6 -->
+    <div class="step">
+      <div class="step-content">
+        <h4>Configure Kubernetes (Optional)</h4>
+        <p>If your services run on Kubernetes and you want SCL-Governor to perform K8s-level actuation (scaling, rollbacks, config changes), enable K8s and provide cluster details.</p>
+        <div class="wireframe">
+          <div class="wireframe-header">
+            <span class="wf-title">Step 4: Kubernetes</span>
+          </div>
+          <div class="wireframe-content">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+              <div style="width: 32px; height: 18px; border-radius: 9px; background: var(--blue-500); position: relative;">
+                <div style="width: 14px; height: 14px; border-radius: 50%; background: white; position: absolute; right: 2px; top: 2px;"></div>
+              </div>
+              <span style="color: var(--text-primary); font-size: 12px; font-weight: 500;">Kubernetes Enabled</span>
+            </div>
+            <div style="margin-bottom: 8px;">
+              <div style="font-size: 10px; color: var(--text-dim); margin-bottom: 4px;">Cluster Name</div>
+              <div class="wireframe-input">prod-us-east-1</div>
+            </div>
+            <div style="margin-bottom: 8px;">
+              <div style="font-size: 10px; color: var(--text-dim); margin-bottom: 4px;">Kubeconfig Path</div>
+              <div class="wireframe-input">~/.kube/config</div>
+            </div>
+            <div style="margin-bottom: 8px;">
+              <div style="font-size: 10px; color: var(--text-dim); margin-bottom: 4px;">Namespace</div>
+              <div class="wireframe-input">production</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 7 -->
+    <div class="step">
+      <div class="step-content">
+        <h4>Configure Notifications</h4>
+        <p>Set up Slack and PagerDuty so SCL-Governor can notify your team about actions it takes, or escalate decisions that need human review.</p>
+        <div class="wireframe">
+          <div class="wireframe-header">
+            <span class="wf-title">Step 5: Notifications</span>
+          </div>
+          <div class="wireframe-content">
+            <div style="margin-bottom: 8px;">
+              <div style="font-size: 10px; color: var(--text-dim); margin-bottom: 4px;">Slack Webhook URL</div>
+              <div class="wireframe-input">https://hooks.slack.com/services/T00/B00/xxxx</div>
+            </div>
+            <div style="margin-bottom: 8px;">
+              <div style="font-size: 10px; color: var(--text-dim); margin-bottom: 4px;">Slack Channel</div>
+              <div class="wireframe-input">#scl-governor</div>
+            </div>
+            <div style="margin-bottom: 8px;">
+              <div style="font-size: 10px; color: var(--text-dim); margin-bottom: 4px;">PagerDuty API Key (for escalations)</div>
+              <div class="wireframe-input">pd-key-xxxxxxxx</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 8 -->
+    <div class="step">
+      <div class="step-content">
+        <h4>Configure LLM Provider</h4>
+        <p>Choose your LLM provider and supply an API key. The LLM powers causal reasoning, risk narrative generation, and intelligent action selection.</p>
+        <div class="wireframe">
+          <div class="wireframe-header">
+            <span class="wf-title">Step 6: LLM Configuration</span>
+          </div>
+          <div class="wireframe-content">
+            <div style="margin-bottom: 8px;">
+              <div style="font-size: 10px; color: var(--text-dim); margin-bottom: 4px;">Provider</div>
+              <div style="display: flex; gap: 6px;">
+                <span class="wireframe-tag" style="background: rgba(168,85,247,0.2); color: var(--purple-400); border: 1px solid rgba(168,85,247,0.3);">Anthropic Claude</span>
+                <span class="wireframe-tag" style="background: var(--bg-tertiary); color: var(--text-dim);">OpenAI</span>
+              </div>
+            </div>
+            <div style="margin-bottom: 8px;">
+              <div style="font-size: 10px; color: var(--text-dim); margin-bottom: 4px;">Model</div>
+              <div class="wireframe-input">claude-sonnet-4-20250514</div>
+            </div>
+            <div style="margin-bottom: 8px;">
+              <div style="font-size: 10px; color: var(--text-dim); margin-bottom: 4px;">API Key</div>
+              <div class="wireframe-input">sk-ant-api03-xxxxxxxxxxxxx</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 9 -->
+    <div class="step">
+      <div class="step-content">
+        <h4>Review and Test</h4>
+        <p>Review all your settings in the summary view. Click <strong>Test All Connections</strong> to verify that Prometheus, Kubernetes, and LLM endpoints are reachable. Fix any errors, then click <strong>Save &amp; Activate</strong>.</p>
+        <div class="wireframe">
+          <div class="wireframe-header">
+            <span class="wf-title">Step 7: Review &amp; Test</span>
+          </div>
+          <div class="wireframe-content">
+            <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px;">
+              <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
+                <span style="color: var(--text-dim);">Prometheus</span>
+                <span><span class="wireframe-check">&#10003;</span> <span style="color: var(--green-400); font-size: 10px;">Connected (1,247 metrics)</span></span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
+                <span style="color: var(--text-dim);">Kubernetes</span>
+                <span><span class="wireframe-check">&#10003;</span> <span style="color: var(--green-400); font-size: 10px;">prod-us-east-1 (3 nodes)</span></span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
+                <span style="color: var(--text-dim);">Services</span>
+                <span style="font-size: 10px; color: var(--text-muted);">3 configured</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
+                <span style="color: var(--text-dim);">LLM</span>
+                <span><span class="wireframe-check">&#10003;</span> <span style="color: var(--green-400); font-size: 10px;">Claude claude-sonnet-4-20250514 responding</span></span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 6px 0;">
+                <span style="color: var(--text-dim);">Notifications</span>
+                <span><span class="wireframe-check">&#10003;</span> <span style="color: var(--green-400); font-size: 10px;">Slack + PagerDuty</span></span>
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <span class="wireframe-btn green" style="font-size: 11px; padding: 6px 14px;">Save &amp; Activate</span>
+              <span class="wireframe-btn" style="font-size: 11px; padding: 6px 14px;">Test All Connections</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 10 -->
+    <div class="step">
+      <div class="step-content">
+        <h4>Your application is now being monitored!</h4>
+        <p>Once activated, SCL-Governor immediately begins pulling real telemetry from your Prometheus instance. Head to the <strong>Dashboard</strong> to see live data flowing in. The governor will start its control loop, and you will see real regime assessments, predictions, and decisions based on your actual infrastructure metrics.</p>
+        <div class="info-box">
+          <div class="label">What happens next</div>
+          <p>The governor connects to your Prometheus, begins collecting metrics across all 5 signal classes, classifies your system regime, and starts its continuous control cycle. Within the first few cycles, you will see real predictions and decisions on the Dashboard.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SECTION 4: DASHBOARD ==================== -->
+<section id="dashboard">
+  <h2><span class="section-num">04</span> Dashboard</h2>
+  <p class="section-lead">Real-time overview of system health and the latest control cycle.</p>
+
+  <p>The Dashboard is your primary view into SCL-Governor. It provides at-a-glance status and allows you to start, stop, or manually trigger control cycles.</p>
+
+  <!-- Dashboard Wireframe -->
+  <div class="wireframe">
+    <div class="wireframe-header">
+      <span class="wf-title">Dashboard</span>
+      <div>
+        <span class="wireframe-btn green">&#9654; Start Governor</span>
+        <span class="wireframe-btn">&#8635; Trigger Cycle</span>
+      </div>
+    </div>
+    <div class="wireframe-content">
+      <!-- Stat cards row -->
+      <div class="wireframe-row">
+        <div class="wireframe-card">
+          <div class="wf-label">Current Regime</div>
+          <div class="wf-value green">normal</div>
+        </div>
+        <div class="wireframe-card">
+          <div class="wf-label">Cycle Count</div>
+          <div class="wf-value blue">42</div>
+        </div>
+        <div class="wireframe-card">
+          <div class="wf-label">Decision Confidence</div>
+          <div class="wf-value green">89.2%</div>
+        </div>
+        <div class="wireframe-card">
+          <div class="wf-label">SLA Breach ETA</div>
+          <div class="wf-value green">Safe</div>
+        </div>
+      </div>
+      <!-- Regime timeline row -->
+      <div class="wireframe-row">
+        <div class="wireframe-chart" style="flex: 2;">
+          <div class="wf-chart-label">Regime Timeline (Last 50 Cycles)</div>
+          <div class="regime-bar">
+            <div class="bar-segment" style="background: #22c55e; flex: 8;"></div>
+            <div class="bar-segment" style="background: #22c55e; flex: 6;"></div>
+            <div class="bar-segment" style="background: #eab308; flex: 3;"></div>
+            <div class="bar-segment" style="background: #eab308; flex: 2;"></div>
+            <div class="bar-segment" style="background: #ef4444; flex: 1;"></div>
+            <div class="bar-segment" style="background: #3b82f6; flex: 2;"></div>
+            <div class="bar-segment" style="background: #22c55e; flex: 12;"></div>
+            <div class="bar-segment" style="background: #22c55e; flex: 8;"></div>
+            <div class="bar-segment" style="background: #eab308; flex: 2;"></div>
+            <div class="bar-segment" style="background: #22c55e; flex: 6;"></div>
+          </div>
+          <div style="display: flex; gap: 12px; margin-top: 8px; font-size: 9px; color: var(--text-dim);">
+            <span style="display: flex; align-items: center; gap: 4px;"><span style="width:8px;height:8px;background:#22c55e;border-radius:2px;display:inline-block;"></span> normal</span>
+            <span style="display: flex; align-items: center; gap: 4px;"><span style="width:8px;height:8px;background:#eab308;border-radius:2px;display:inline-block;"></span> degraded</span>
+            <span style="display: flex; align-items: center; gap: 4px;"><span style="width:8px;height:8px;background:#ef4444;border-radius:2px;display:inline-block;"></span> critical</span>
+            <span style="display: flex; align-items: center; gap: 4px;"><span style="width:8px;height:8px;background:#3b82f6;border-radius:2px;display:inline-block;"></span> recovery</span>
+            <span style="display: flex; align-items: center; gap: 4px;"><span style="width:8px;height:8px;background:#a855f7;border-radius:2px;display:inline-block;"></span> maintenance</span>
+          </div>
+        </div>
+        <div class="wireframe-chart" style="flex: 1;">
+          <div class="wf-chart-label">Confidence Trend</div>
+          <div class="sparkline">
+            <div class="spark-bar" style="height: 60%;"></div>
+            <div class="spark-bar" style="height: 70%;"></div>
+            <div class="spark-bar" style="height: 65%;"></div>
+            <div class="spark-bar" style="height: 80%;"></div>
+            <div class="spark-bar" style="height: 75%;"></div>
+            <div class="spark-bar" style="height: 85%;"></div>
+            <div class="spark-bar" style="height: 90%;"></div>
+            <div class="spark-bar" style="height: 88%;"></div>
+            <div class="spark-bar" style="height: 92%;"></div>
+            <div class="spark-bar" style="height: 89%;"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Bottom row -->
+      <div class="wireframe-row">
+        <div class="wireframe-panel">
+          <div class="wf-panel-title">Latest Decision</div>
+          <div style="color: var(--text-primary); font-size: 11px; margin-bottom: 4px;">Scale up checkout-service to 4 replicas</div>
+          <div style="display: flex; gap: 6px;">
+            <span class="wireframe-tag" style="background: rgba(59,130,246,0.15); color: var(--blue-400);">execute with notification</span>
+            <span class="wireframe-tag" style="background: var(--bg-tertiary); color: var(--text-dim);">horizontal scale</span>
+          </div>
+        </div>
+        <div class="wireframe-panel">
+          <div class="wf-panel-title">Anomalies &amp; Concerns (2)</div>
+          <div style="color: var(--yellow-400); font-size: 10px; margin-bottom: 3px;">&#8226; Elevated p99 latency on checkout-service</div>
+          <div style="color: var(--yellow-400); font-size: 10px;">&#8226; Memory usage trending upward (87%)</div>
+        </div>
+      </div>
+      <!-- Cycle Pipeline -->
+      <div style="margin-top: 8px; padding: 10px; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 6px;">
+        <div style="font-size: 9px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px;">Latest Cycle Pipeline</div>
+        <div style="display: flex; align-items: center; gap: 4px;">
+          <span style="padding: 4px 10px; background: rgba(34,197,94,0.15); color: var(--green-400); border-radius: 4px; font-size: 10px;">Observe &#10003;</span>
+          <span style="color: var(--text-dim);">&rarr;</span>
+          <span style="padding: 4px 10px; background: rgba(34,197,94,0.15); color: var(--green-400); border-radius: 4px; font-size: 10px;">Predict &#10003;</span>
+          <span style="color: var(--text-dim);">&rarr;</span>
+          <span style="padding: 4px 10px; background: rgba(34,197,94,0.15); color: var(--green-400); border-radius: 4px; font-size: 10px;">Simulate &#10003;</span>
+          <span style="color: var(--text-dim);">&rarr;</span>
+          <span style="padding: 4px 10px; background: rgba(34,197,94,0.15); color: var(--green-400); border-radius: 4px; font-size: 10px;">Decide &#10003;</span>
+          <span style="color: var(--text-dim);">&rarr;</span>
+          <span style="padding: 4px 10px; background: rgba(34,197,94,0.15); color: var(--green-400); border-radius: 4px; font-size: 10px;">Actuate &#10003;</span>
+          <span style="color: var(--text-dim);">&rarr;</span>
+          <span style="padding: 4px 10px; background: rgba(34,197,94,0.15); color: var(--green-400); border-radius: 4px; font-size: 10px;">Learn &#10003;</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Key Interactions</h3>
+  <ul>
+    <li><strong>Start / Stop Governor</strong> &mdash; The top-right buttons control the continuous control loop. Starting begins automatic cycling at the configured interval.</li>
+    <li><strong>Trigger Cycle</strong> &mdash; Manually execute a single control cycle without starting the continuous loop. Useful for testing or on-demand analysis.</li>
+    <li><strong>Regime Timeline</strong> &mdash; The colored bar chart shows regime classification across recent cycles. Hover over segments to see the cycle ID.</li>
+    <li><strong>Confidence Trend</strong> &mdash; A sparkline showing how decision confidence has evolved over recent cycles.</li>
+  </ul>
+</section>
+
+<!-- ==================== SECTION 5: CONTROL LOOP ==================== -->
+<section id="control-loop">
+  <h2><span class="section-num">05</span> Control Loop</h2>
+  <p class="section-lead">Detailed inspection of individual control cycles and their six phases.</p>
+
+  <p>The Control Loop page gives you a deep view into each phase of any cycle. Use the cycle selector dropdown to browse through historical cycles, and click on each phase tab to inspect its input and output.</p>
+
+  <div class="wireframe">
+    <div class="wireframe-header">
+      <span class="wf-title">Control Loop</span>
+      <div>
+        <span class="wireframe-btn">Cycle a1b2c3d4... &#9660;</span>
+        <span class="wireframe-btn">{ } JSON</span>
+      </div>
+    </div>
+    <div class="wireframe-content">
+      <div style="display: flex; gap: 12px;">
+        <!-- Phase sidebar -->
+        <div style="width: 120px; display: flex; flex-direction: column; gap: 4px;">
+          <div style="padding: 6px 10px; background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); border-radius: 6px; color: var(--blue-400); font-size: 11px;">Observe</div>
+          <div style="padding: 6px 10px; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 6px; color: var(--text-dim); font-size: 11px;">Predict</div>
+          <div style="padding: 6px 10px; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 6px; color: var(--text-dim); font-size: 11px;">Simulate</div>
+          <div style="padding: 6px 10px; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 6px; color: var(--text-dim); font-size: 11px;">Decide</div>
+          <div style="padding: 6px 10px; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 6px; color: var(--text-dim); font-size: 11px;">Actuate</div>
+          <div style="padding: 6px 10px; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 6px; color: var(--text-dim); font-size: 11px;">Learn</div>
+        </div>
+        <!-- Phase content -->
+        <div style="flex: 1; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 14px;">
+          <div style="font-size: 10px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 10px;">Observe Phase Output</div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">Regime: <span style="color: var(--green-400);">normal</span></div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">Anomalies Detected: 2</div>
+          <div style="font-size: 11px; color: var(--text-muted);">Top Concerns:</div>
+          <div style="font-size: 10px; color: var(--yellow-400); margin-left: 8px;">&#8226; Elevated p99 latency on checkout-svc</div>
+          <div style="font-size: 10px; color: var(--yellow-400); margin-left: 8px;">&#8226; Memory usage trending upward</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Features</h3>
+  <ul>
+    <li><strong>Cycle Selector</strong> &mdash; Dropdown shows all recent cycles with their regime badge and timestamp. Select any to inspect its details.</li>
+    <li><strong>Visual / JSON Toggle</strong> &mdash; Switch between a structured visual view and the raw JSON output for each phase.</li>
+    <li><strong>Phase Tabs</strong> &mdash; Each of the 6 phases has its own tab showing the relevant data for that stage of the pipeline.</li>
+  </ul>
+</section>
+
+<!-- ==================== SECTION 6: TELEMETRY ==================== -->
+<section id="telemetry">
+  <h2><span class="section-num">06</span> Telemetry</h2>
+  <p class="section-lead">Real-time metrics across five signal classes with anomaly detection.</p>
+
+  <p>The Telemetry page displays metrics organized by signal class. Switch between <strong>Charts</strong> view (time-series graphs per metric) and <strong>Tensor View</strong> (a heatmap of the full state tensor).</p>
+
+  <div class="wireframe">
+    <div class="wireframe-header">
+      <span class="wf-title">Telemetry</span>
+      <div>
+        <span class="wireframe-btn" style="background: rgba(59,130,246,0.3);">Charts</span>
+        <span class="wireframe-btn">Tensor View</span>
+      </div>
+    </div>
+    <div class="wireframe-content">
+      <!-- Signal class tabs -->
+      <div style="display: flex; gap: 4px; margin-bottom: 12px; background: var(--bg-secondary); padding: 4px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+        <div style="flex:1; text-align: center; padding: 6px; border-radius: 6px; background: rgba(59,130,246,0.15); color: var(--blue-400); font-size: 10px;"><span style="display:inline-block;width:6px;height:6px;background:var(--blue-500);border-radius:50%;margin-right:4px;"></span>Infrastructure</div>
+        <div style="flex:1; text-align: center; padding: 6px; border-radius: 6px; color: var(--text-dim); font-size: 10px;"><span style="display:inline-block;width:6px;height:6px;background:var(--green-500);border-radius:50%;margin-right:4px;opacity:0.4;"></span>Application</div>
+        <div style="flex:1; text-align: center; padding: 6px; border-radius: 6px; color: var(--text-dim); font-size: 10px;"><span style="display:inline-block;width:6px;height:6px;background:var(--yellow-500);border-radius:50%;margin-right:4px;opacity:0.4;"></span>Business</div>
+        <div style="flex:1; text-align: center; padding: 6px; border-radius: 6px; color: var(--text-dim); font-size: 10px;"><span style="display:inline-block;width:6px;height:6px;background:var(--purple-500);border-radius:50%;margin-right:4px;opacity:0.4;"></span>Network</div>
+        <div style="flex:1; text-align: center; padding: 6px; border-radius: 6px; color: var(--text-dim); font-size: 10px;"><span style="display:inline-block;width:6px;height:6px;background:var(--red-500);border-radius:50%;margin-right:4px;opacity:0.4;"></span>Cost</div>
+      </div>
+      <!-- Metric charts grid -->
+      <div class="wireframe-row">
+        <div class="wireframe-chart">
+          <div class="wf-chart-label">cpu_usage_percent (%)</div>
+          <div class="sparkline" style="height: 40px;">
+            <div class="spark-bar" style="height:45%;"></div><div class="spark-bar" style="height:50%;"></div><div class="spark-bar" style="height:48%;"></div><div class="spark-bar" style="height:55%;"></div><div class="spark-bar" style="height:62%;"></div><div class="spark-bar" style="height:58%;"></div><div class="spark-bar" style="height:65%;"></div><div class="spark-bar" style="height:60%;"></div>
+          </div>
+        </div>
+        <div class="wireframe-chart" style="position: relative;">
+          <div style="position: absolute; top: 4px; right: 4px; background: rgba(248,113,113,0.2); color: var(--red-400); padding: 1px 6px; border-radius: 4px; font-size: 8px;">Anomaly (z=3.2)</div>
+          <div class="wf-chart-label">memory_usage_percent (%)</div>
+          <div class="sparkline" style="height: 40px;">
+            <div class="spark-bar" style="height:70%; background: var(--red-500);"></div><div class="spark-bar" style="height:72%; background: var(--red-500);"></div><div class="spark-bar" style="height:75%; background: var(--red-500);"></div><div class="spark-bar" style="height:80%; background: var(--red-500);"></div><div class="spark-bar" style="height:83%; background: var(--red-500);"></div><div class="spark-bar" style="height:85%; background: var(--red-500);"></div><div class="spark-bar" style="height:87%; background: var(--red-500);"></div><div class="spark-bar" style="height:89%; background: var(--red-500);"></div>
+          </div>
+        </div>
+      </div>
+      <div class="wireframe-row">
+        <div class="wireframe-chart">
+          <div class="wf-chart-label">disk_io_read (MB/s)</div>
+          <div class="sparkline" style="height: 40px;">
+            <div class="spark-bar" style="height:30%;"></div><div class="spark-bar" style="height:25%;"></div><div class="spark-bar" style="height:35%;"></div><div class="spark-bar" style="height:28%;"></div><div class="spark-bar" style="height:32%;"></div><div class="spark-bar" style="height:27%;"></div><div class="spark-bar" style="height:30%;"></div><div class="spark-bar" style="height:33%;"></div>
+          </div>
+        </div>
+        <div class="wireframe-chart">
+          <div class="wf-chart-label">network_bandwidth_mbps (Mbps)</div>
+          <div class="sparkline" style="height: 40px;">
+            <div class="spark-bar" style="height:40%;"></div><div class="spark-bar" style="height:45%;"></div><div class="spark-bar" style="height:42%;"></div><div class="spark-bar" style="height:50%;"></div><div class="spark-bar" style="height:48%;"></div><div class="spark-bar" style="height:55%;"></div><div class="spark-bar" style="height:52%;"></div><div class="spark-bar" style="height:50%;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Signal Classes</h3>
+  <ul>
+    <li><strong>Infrastructure</strong> &mdash; CPU, memory, disk I/O, network bandwidth</li>
+    <li><strong>Application</strong> &mdash; Request latency, error rates, throughput, queue depth</li>
+    <li><strong>Business</strong> &mdash; Revenue, conversion rates, cart abandonment, active users</li>
+    <li><strong>Network</strong> &mdash; Packet loss, connection counts, DNS latency</li>
+    <li><strong>Cost</strong> &mdash; Compute spend, storage costs, data transfer charges</li>
+  </ul>
+
+  <h3>Tensor View</h3>
+  <p>The Tensor View presents the entire state as a heatmap grid, where each cell represents a normalized metric value. This provides a holistic at-a-glance view of system health across all signal classes simultaneously. Red cells indicate anomalous values.</p>
+
+  <h3>Trend Vectors</h3>
+  <p>Below the charts, a table shows the rate of change for each metric across three time windows (5-minute, 15-minute, and 1-hour deltas). Rising values are shown in red, falling in green, and stable in gray with directional arrows.</p>
+</section>
+
+<!-- ==================== SECTION 7: PREDICTIONS ==================== -->
+<section id="predictions">
+  <h2><span class="section-num">07</span> Predictions</h2>
+  <p class="section-lead">Multi-horizon forecasts, risk assessments, and causal insights from the LLM.</p>
+
+  <div class="wireframe">
+    <div class="wireframe-header">
+      <span class="wf-title">Predictions</span>
+    </div>
+    <div class="wireframe-content">
+      <!-- Risk gauges -->
+      <div class="wireframe-row">
+        <div class="wireframe-card">
+          <div class="wf-label">SLA Compliance</div>
+          <div style="width: 60px; height: 60px; border-radius: 50%; border: 4px solid var(--green-400); margin: 8px auto; display: flex; align-items: center; justify-content: center;">
+            <span style="font-size: 14px; font-weight: 700; color: var(--green-400);">94%</span>
+          </div>
+          <div style="font-size: 9px; color: var(--text-dim);">Breach Prob: <span style="color: var(--green-400);">5.8%</span></div>
+        </div>
+        <div class="wireframe-card">
+          <div class="wf-label">Cascade Safety</div>
+          <div style="width: 60px; height: 60px; border-radius: 50%; border: 4px solid var(--green-400); margin: 8px auto; display: flex; align-items: center; justify-content: center;">
+            <span style="font-size: 14px; font-weight: 700; color: var(--green-400);">97%</span>
+          </div>
+          <div style="font-size: 9px; color: var(--text-dim);">Cascade Prob: <span style="color: var(--green-400);">2.5%</span></div>
+        </div>
+        <div class="wireframe-card">
+          <div class="wf-label">Cost Control</div>
+          <div style="width: 60px; height: 60px; border-radius: 50%; border: 4px solid var(--yellow-400); margin: 8px auto; display: flex; align-items: center; justify-content: center;">
+            <span style="font-size: 14px; font-weight: 700; color: var(--yellow-400);">82%</span>
+          </div>
+          <div style="font-size: 9px; color: var(--text-dim);">Overrun Prob: <span style="color: var(--yellow-400);">18.1%</span></div>
+        </div>
+      </div>
+      <!-- Causal Insights -->
+      <div class="wireframe-panel" style="margin-top: 8px;">
+        <div class="wf-panel-title">Causal Insights (from LLM)</div>
+        <div style="font-size: 10px; color: var(--yellow-400); margin-bottom: 3px;">1. Memory leak in checkout-svc causing GC pressure</div>
+        <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 3px;">2. Correlated latency spike with upstream DB connection pool</div>
+        <div style="font-size: 10px; color: var(--text-muted);">3. Cost increase driven by auto-scaling in response to traffic</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>How to Read This Page</h3>
+  <ul>
+    <li><strong>Risk Gauges</strong> &mdash; Three circular gauges show the inverse of risk probabilities: SLA compliance, cascade safety, and cost control. Higher is better. The gauge color changes from green to yellow to red as risk increases.</li>
+    <li><strong>Horizon Tabs</strong> &mdash; Switch between forecast time horizons (e.g., 5 min, 15 min, 1 hour). Each horizon shows predicted metric values with confidence bands (q10/q50/q90).</li>
+    <li><strong>Causal Insights</strong> &mdash; The LLM provides ranked explanations of what is driving the current predictions, including potential root causes and correlated factors.</li>
+    <li><strong>Model Confidence Scores</strong> &mdash; Progress bars showing how confident each prediction model component is in its forecasts.</li>
+  </ul>
+</section>
+
+<!-- ==================== SECTION 8: SIMULATIONS ==================== -->
+<section id="simulations">
+  <h2><span class="section-num">08</span> Simulations</h2>
+  <p class="section-lead">Monte Carlo simulations, Pareto frontiers, and action candidate comparison.</p>
+
+  <div class="wireframe">
+    <div class="wireframe-header">
+      <span class="wf-title">Simulations</span>
+    </div>
+    <div class="wireframe-content">
+      <!-- Pareto scatter -->
+      <div class="wireframe-chart" style="min-height: 120px;">
+        <div class="wf-chart-label">Pareto Frontier (Cost vs Performance)</div>
+        <div style="position: relative; height: 80px; border-left: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle); margin: 8px 0;">
+          <div style="font-size: 8px; color: var(--text-dim); position: absolute; left: -40px; top: 0;">Objective</div>
+          <div style="font-size: 8px; color: var(--text-dim); position: absolute; bottom: -14px; right: 0;">Cost $/hr</div>
+          <!-- Points -->
+          <div style="position: absolute; left: 20%; bottom: 60%; width: 10px; height: 10px; background: var(--green-400); border-radius: 50%; opacity: 0.9;" title="Pareto optimal"></div>
+          <div style="position: absolute; left: 35%; bottom: 72%; width: 10px; height: 10px; background: var(--green-400); border-radius: 50%; opacity: 0.9;" title="Pareto optimal"></div>
+          <div style="position: absolute; left: 55%; bottom: 80%; width: 10px; height: 10px; background: var(--green-400); border-radius: 50%; opacity: 0.9;" title="Pareto optimal"></div>
+          <div style="position: absolute; left: 30%; bottom: 40%; width: 8px; height: 8px; background: var(--text-dim); border-radius: 50%; opacity: 0.5;"></div>
+          <div style="position: absolute; left: 50%; bottom: 50%; width: 8px; height: 8px; background: var(--text-dim); border-radius: 50%; opacity: 0.5;"></div>
+          <div style="position: absolute; left: 65%; bottom: 55%; width: 8px; height: 8px; background: var(--text-dim); border-radius: 50%; opacity: 0.5;"></div>
+          <div style="position: absolute; left: 75%; bottom: 35%; width: 8px; height: 8px; background: var(--text-dim); border-radius: 50%; opacity: 0.5;"></div>
+        </div>
+        <div style="display: flex; gap: 12px; font-size: 9px; color: var(--text-dim); margin-top: 16px;">
+          <span style="display: flex; align-items: center; gap: 4px;"><span style="width:8px;height:8px;background:var(--green-400);border-radius:50%;display:inline-block;"></span> Pareto Optimal</span>
+          <span style="display: flex; align-items: center; gap: 4px;"><span style="width:8px;height:8px;background:var(--text-dim);border-radius:50%;display:inline-block;"></span> Non-Pareto</span>
+        </div>
+      </div>
+      <!-- Comparison table -->
+      <div style="margin-top: 8px; font-size: 10px;">
+        <div style="display: flex; padding: 6px 0; border-bottom: 1px solid var(--border-subtle); color: var(--text-dim); font-size: 9px; text-transform: uppercase;">
+          <span style="flex:2;">Action</span>
+          <span style="flex:1; text-align: right;">Scenarios</span>
+          <span style="flex:1; text-align: right;">Objective</span>
+          <span style="flex:1; text-align: right;">VaR</span>
+          <span style="flex:1; text-align: right;">CVaR</span>
+          <span style="flex:1; text-align: right;">SLA Breach</span>
+          <span style="flex:1; text-align: right;">Cost</span>
+          <span style="flex:1; text-align: center;">Pareto</span>
+        </div>
+        <div style="display: flex; padding: 6px 0; border-bottom: 1px solid rgba(51,65,85,0.3); color: var(--text-muted); background: rgba(34,197,94,0.03);">
+          <span style="flex:2;">Scale up checkout</span>
+          <span style="flex:1; text-align: right; font-family: 'JetBrains Mono', monospace;">1,000</span>
+          <span style="flex:1; text-align: right; font-family: 'JetBrains Mono', monospace;">0.8742</span>
+          <span style="flex:1; text-align: right; font-family: 'JetBrains Mono', monospace;">0.7123</span>
+          <span style="flex:1; text-align: right; font-family: 'JetBrains Mono', monospace;">0.6891</span>
+          <span style="flex:1; text-align: right; color: var(--green-400); font-family: 'JetBrains Mono', monospace;">3.2%</span>
+          <span style="flex:1; text-align: right; color: var(--red-400); font-family: 'JetBrains Mono', monospace;">+$2.40</span>
+          <span style="flex:1; text-align: center; color: var(--green-400);">Yes</span>
+        </div>
+        <div style="display: flex; padding: 6px 0; border-bottom: 1px solid rgba(51,65,85,0.3); color: var(--text-muted);">
+          <span style="flex:2;">Restart pods</span>
+          <span style="flex:1; text-align: right; font-family: 'JetBrains Mono', monospace;">1,000</span>
+          <span style="flex:1; text-align: right; font-family: 'JetBrains Mono', monospace;">0.6510</span>
+          <span style="flex:1; text-align: right; font-family: 'JetBrains Mono', monospace;">0.4201</span>
+          <span style="flex:1; text-align: right; font-family: 'JetBrains Mono', monospace;">0.3890</span>
+          <span style="flex:1; text-align: right; color: var(--yellow-400); font-family: 'JetBrains Mono', monospace;">12.1%</span>
+          <span style="flex:1; text-align: right; color: var(--green-400); font-family: 'JetBrains Mono', monospace;">-$0.10</span>
+          <span style="flex:1; text-align: center; color: var(--text-dim);">No</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Understanding the Metrics</h3>
+  <ul>
+    <li><strong>Expected Objective</strong> &mdash; The weighted multi-objective score across performance, cost, risk, stability, and business dimensions. Higher is better.</li>
+    <li><strong>VaR (Value at Risk)</strong> &mdash; The worst-case objective value at the 5th percentile. Shows the downside risk of an action.</li>
+    <li><strong>CVaR (Conditional VaR)</strong> &mdash; The average objective in the worst 5% of scenarios. A more conservative risk measure than VaR.</li>
+    <li><strong>SLA Breach %</strong> &mdash; Percentage of simulated scenarios where the action leads to an SLA violation.</li>
+    <li><strong>Pareto Optimal</strong> &mdash; An action is Pareto-optimal if no other action is better in all dimensions simultaneously. These are the best candidates.</li>
+  </ul>
+</section>
+
+<!-- ==================== SECTION 9: DECISIONS ==================== -->
+<section id="decisions">
+  <h2><span class="section-num">09</span> Decisions</h2>
+  <p class="section-lead">Audit log, autonomy classification, and human override interface.</p>
+
+  <p>Every decision made by SCL-Governor is logged with full context: the selected action, reasoning, confidence score, autonomy level, alternative actions considered, and rollback plan. This page provides complete audit trail transparency.</p>
+
+  <h3>Autonomy Levels</h3>
+  <p>The autonomy level is determined by the decision confidence score and the thresholds configured in Settings:</p>
+
+  <div class="autonomy-grid">
+    <div class="autonomy-card auto">
+      <h4>Execute Autonomous</h4>
+      <p>Confidence above the "high" threshold (default 85%). The governor executes the action immediately without human involvement. Best for well-understood, low-risk, reversible actions.</p>
+    </div>
+    <div class="autonomy-card notify">
+      <h4>Execute with Notification</h4>
+      <p>Confidence between "medium" and "high" thresholds. The action is executed and a notification is sent to the team via Slack or PagerDuty. No human approval needed, but team is informed.</p>
+    </div>
+    <div class="autonomy-card recommend">
+      <h4>Recommend</h4>
+      <p>Confidence between "low" and "medium" thresholds. The governor recommends an action but does not execute it. A human must review and approve via the override interface.</p>
+    </div>
+    <div class="autonomy-card escalate">
+      <h4>Escalate</h4>
+      <p>Confidence below the "low" threshold, or extremely high risk. The governor escalates to on-call via PagerDuty and takes no action. Typically triggered during novel failure modes.</p>
+    </div>
+  </div>
+
+  <h3>Human Override</h3>
+  <p>Click the <strong>Human Override</strong> button in the top-right to manually submit an action. Enter the desired action (e.g., "scale_up api-service to 5 replicas") and a reason. The override is logged and the governor incorporates human feedback into its learning loop.</p>
+
+  <h3>Decision Detail View</h3>
+  <p>Click any row in the decision table to expand it and see the full reasoning, rollback plan, rollback trigger conditions, blast radius, reversibility score, cost delta, and number of alternative actions considered.</p>
+</section>
+
+<!-- ==================== SECTION 10: LEARNING ==================== -->
+<section id="learning">
+  <h2><span class="section-num">10</span> Learning</h2>
+  <p class="section-lead">Online learning metrics, model performance, and drift detection.</p>
+
+  <div class="wireframe">
+    <div class="wireframe-header">
+      <span class="wf-title">Learning</span>
+    </div>
+    <div class="wireframe-content">
+      <!-- Top stat cards -->
+      <div class="wireframe-row">
+        <div class="wireframe-card">
+          <div class="wf-label">Model Drift</div>
+          <div class="wf-value green">3.2%</div>
+          <div style="height: 4px; background: var(--bg-tertiary); border-radius: 2px; margin-top: 6px;"><div style="width: 16%; height: 100%; background: var(--green-400); border-radius: 2px;"></div></div>
+          <div style="font-size: 9px; color: var(--text-dim); margin-top: 4px;">Within normal bounds</div>
+        </div>
+        <div class="wireframe-card">
+          <div class="wf-label">Human Overrides</div>
+          <div class="wf-value yellow">3</div>
+          <div style="font-size: 9px; color: var(--text-dim); margin-top: 4px;">3 manual interventions</div>
+        </div>
+        <div class="wireframe-card">
+          <div class="wf-label">Replay Buffer</div>
+          <div class="wf-value blue">252</div>
+          <div style="font-size: 9px; color: var(--text-dim); margin-top: 4px;">Experience transitions stored</div>
+        </div>
+      </div>
+      <!-- Prediction accuracy chart -->
+      <div class="wireframe-chart" style="margin-top: 8px;">
+        <div class="wf-chart-label">Prediction Accuracy Over Time</div>
+        <div class="sparkline" style="height: 50px;">
+          <div class="spark-bar" style="height:65%; background: var(--green-500);"></div>
+          <div class="spark-bar" style="height:70%; background: var(--green-500);"></div>
+          <div class="spark-bar" style="height:72%; background: var(--green-500);"></div>
+          <div class="spark-bar" style="height:68%; background: var(--green-500);"></div>
+          <div class="spark-bar" style="height:75%; background: var(--green-500);"></div>
+          <div class="spark-bar" style="height:78%; background: var(--green-500);"></div>
+          <div class="spark-bar" style="height:80%; background: var(--green-500);"></div>
+          <div class="spark-bar" style="height:82%; background: var(--green-500);"></div>
+          <div class="spark-bar" style="height:79%; background: var(--green-500);"></div>
+          <div class="spark-bar" style="height:85%; background: var(--green-500);"></div>
+          <div class="spark-bar" style="height:88%; background: var(--green-500);"></div>
+          <div class="spark-bar" style="height:87%; background: var(--green-500);"></div>
+          <div class="spark-bar" style="height:90%; background: var(--green-500);"></div>
+          <div class="spark-bar" style="height:92%; background: var(--green-500);"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3>What is Tracked</h3>
+  <ul>
+    <li><strong>Prediction Accuracy</strong> &mdash; How well the system's predictions matched actual outcomes. Shown as an area chart trending over cycles.</li>
+    <li><strong>Simulation Fidelity</strong> &mdash; How closely Monte Carlo simulation results matched real-world outcomes after action execution.</li>
+    <li><strong>Reward Signal</strong> &mdash; A composite score reflecting whether the actions taken improved the system state. Positive rewards indicate improvement.</li>
+    <li><strong>Model Drift</strong> &mdash; A percentage indicating how much the underlying data distribution has shifted. Values above 10% suggest the models should be retrained.</li>
+    <li><strong>Human Overrides</strong> &mdash; Count of manual interventions. Each override is used as a learning signal to improve future decisions.</li>
+    <li><strong>Replay Buffer</strong> &mdash; The number of state-action-reward transitions stored for offline learning and model updates.</li>
+  </ul>
+</section>
+
+<!-- ==================== SECTION 11: SETTINGS ==================== -->
+<section id="settings">
+  <h2><span class="section-num">11</span> Settings</h2>
+  <p class="section-lead">Configure control cycle parameters, objective weights, and safety constraints.</p>
+
+  <div class="wireframe">
+    <div class="wireframe-header">
+      <span class="wf-title">Settings</span>
+      <span class="wireframe-btn green">Save Configuration</span>
+    </div>
+    <div class="wireframe-content">
+      <!-- Cycle interval -->
+      <div style="margin-bottom: 16px;">
+        <div style="font-size: 10px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 6px;">Control Cycle Interval</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="flex: 1; height: 6px; background: var(--bg-tertiary); border-radius: 3px; position: relative;">
+            <div style="width: 25%; height: 100%; background: var(--blue-500); border-radius: 3px;"></div>
+          </div>
+          <span style="font-size: 18px; font-weight: 700; color: var(--text-primary);">15<span style="font-size: 12px; color: var(--text-dim);">s</span></span>
+        </div>
+      </div>
+      <!-- Objective weights -->
+      <div style="margin-bottom: 16px;">
+        <div style="font-size: 10px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 6px;">Objective Weights</div>
+        <div style="margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+          <span style="width: 80px; font-size: 10px; color: var(--green-400);">Performance</span>
+          <div style="flex: 1; height: 4px; background: var(--bg-tertiary); border-radius: 2px;"><div style="width: 30%; height: 100%; background: var(--green-500); border-radius: 2px;"></div></div>
+          <span style="font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--text-dim);">0.30</span>
+        </div>
+        <div style="margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+          <span style="width: 80px; font-size: 10px; color: var(--red-400);">Cost</span>
+          <div style="flex: 1; height: 4px; background: var(--bg-tertiary); border-radius: 2px;"><div style="width: 20%; height: 100%; background: var(--red-500); border-radius: 2px;"></div></div>
+          <span style="font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--text-dim);">0.20</span>
+        </div>
+        <div style="margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+          <span style="width: 80px; font-size: 10px; color: var(--yellow-400);">Risk</span>
+          <div style="flex: 1; height: 4px; background: var(--bg-tertiary); border-radius: 2px;"><div style="width: 20%; height: 100%; background: var(--yellow-500); border-radius: 2px;"></div></div>
+          <span style="font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--text-dim);">0.20</span>
+        </div>
+        <div style="margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+          <span style="width: 80px; font-size: 10px; color: var(--blue-400);">Stability</span>
+          <div style="flex: 1; height: 4px; background: var(--bg-tertiary); border-radius: 2px;"><div style="width: 15%; height: 100%; background: var(--blue-500); border-radius: 2px;"></div></div>
+          <span style="font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--text-dim);">0.15</span>
+        </div>
+        <div style="margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+          <span style="width: 80px; font-size: 10px; color: var(--purple-400);">Business</span>
+          <div style="flex: 1; height: 4px; background: var(--bg-tertiary); border-radius: 2px;"><div style="width: 15%; height: 100%; background: var(--purple-500); border-radius: 2px;"></div></div>
+          <span style="font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--text-dim);">0.15</span>
+        </div>
+      </div>
+      <!-- Safety constraints -->
+      <div>
+        <div style="font-size: 10px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 6px;">Safety Constraints</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+          <div style="background: #0d1117; padding: 8px; border-radius: 6px;"><span style="font-size: 9px; color: var(--text-dim);">Min Replicas</span><br><span style="font-size: 14px; font-weight: 600; color: var(--text-primary);">2</span></div>
+          <div style="background: #0d1117; padding: 8px; border-radius: 6px;"><span style="font-size: 9px; color: var(--text-dim);">Budget Ceiling</span><br><span style="font-size: 14px; font-weight: 600; color: var(--text-primary);">$10,000/mo</span></div>
+          <div style="background: #0d1117; padding: 8px; border-radius: 6px;"><span style="font-size: 9px; color: var(--text-dim);">Max Blast Radius</span><br><span style="font-size: 14px; font-weight: 600; color: var(--text-primary);">30%</span></div>
+          <div style="background: #0d1117; padding: 8px; border-radius: 6px;"><span style="font-size: 9px; color: var(--text-dim);">Cooldown Period</span><br><span style="font-size: 14px; font-weight: 600; color: var(--text-primary);">60s</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Configuration Details</h3>
+  <ul>
+    <li><strong>Cycle Interval</strong> &mdash; How often the control loop runs (1s to 60s). Lower values mean faster response but higher resource usage. Default: 15 seconds.</li>
+    <li><strong>Objective Weights</strong> &mdash; Balance the multi-objective optimization. Weights should sum to 1.0. Increase "performance" weight to prioritize speed; increase "cost" to prioritize savings.</li>
+    <li><strong>Confidence Thresholds</strong> &mdash; Define the boundaries between autonomy levels. High (default 85%): autonomous execution. Medium (65%): execute with notification. Low (40%): recommend only.</li>
+    <li><strong>Safety Constraints</strong> &mdash; Hard limits the governor will never violate: minimum replica count, budget ceiling, maximum blast radius for any single action, maximum concurrent changes, and cooldown between actions.</li>
+    <li><strong>Connector Status</strong> &mdash; Shows which external integrations (Prometheus, Kubernetes, LLM, Slack, PagerDuty) are currently connected and operational.</li>
+  </ul>
+</section>
+
+<!-- ==================== SECTION 12: API REFERENCE ==================== -->
+<section id="api-reference">
+  <h2><span class="section-num">12</span> API Reference</h2>
+  <p class="section-lead">Key REST endpoints for programmatic integration. Full docs at <code>http://localhost:8000/docs</code>.</p>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Endpoint</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="method-badge method-get">GET</span></td>
+          <td>/api/v1/governor/status</td>
+          <td>Get governor status (running, regime, cycle count)</td>
+        </tr>
+        <tr>
+          <td><span class="method-badge method-post">POST</span></td>
+          <td>/api/v1/governor/start</td>
+          <td>Start the continuous control loop</td>
+        </tr>
+        <tr>
+          <td><span class="method-badge method-post">POST</span></td>
+          <td>/api/v1/governor/stop</td>
+          <td>Stop the control loop</td>
+        </tr>
+        <tr>
+          <td><span class="method-badge method-post">POST</span></td>
+          <td>/api/v1/governor/cycle</td>
+          <td>Trigger a single manual control cycle</td>
+        </tr>
+        <tr>
+          <td><span class="method-badge method-get">GET</span></td>
+          <td>/api/v1/governor/cycles</td>
+          <td>List recent cycle outputs (newest first)</td>
+        </tr>
+        <tr>
+          <td><span class="method-badge method-get">GET</span></td>
+          <td>/api/v1/governor/cycles/{cycle_id}</td>
+          <td>Get a specific cycle by ID</td>
+        </tr>
+        <tr>
+          <td><span class="method-badge method-get">GET</span></td>
+          <td>/api/v1/connections/</td>
+          <td>List all configured connections</td>
+        </tr>
+        <tr>
+          <td><span class="method-badge method-post">POST</span></td>
+          <td>/api/v1/connections/</td>
+          <td>Create a new application connection</td>
+        </tr>
+        <tr>
+          <td><span class="method-badge method-get">GET</span></td>
+          <td>/api/v1/connections/{id}</td>
+          <td>Get a specific connection</td>
+        </tr>
+        <tr>
+          <td><span class="method-badge method-put">PUT</span></td>
+          <td>/api/v1/connections/{id}</td>
+          <td>Update a connection configuration</td>
+        </tr>
+        <tr>
+          <td><span class="method-badge method-post">POST</span></td>
+          <td>/api/v1/connections/{id}/test</td>
+          <td>Test connectivity for all endpoints</td>
+        </tr>
+        <tr>
+          <td><span class="method-badge method-post">POST</span></td>
+          <td>/api/v1/connections/{id}/activate</td>
+          <td>Activate connection for the governor</td>
+        </tr>
+        <tr>
+          <td><span class="method-badge method-delete">DELETE</span></td>
+          <td>/api/v1/connections/{id}</td>
+          <td>Delete a connection (cannot delete demo)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info-box">
+    <div class="label">Interactive Docs</div>
+    <p>The backend provides auto-generated interactive API documentation via Swagger UI at <code>http://localhost:8000/docs</code> and ReDoc at <code>http://localhost:8000/redoc</code>. You can test all endpoints directly from the browser.</p>
+  </div>
+</section>
+
+<!-- ==================== SECTION 13: TROUBLESHOOTING ==================== -->
+<section id="troubleshooting">
+  <h2><span class="section-num">13</span> Troubleshooting &amp; FAQ</h2>
+  <p class="section-lead">Common questions and solutions for typical issues.</p>
+
+  <div class="faq-item">
+    <div class="faq-q">I see "Demo Mode" -- how do I connect real infrastructure?</div>
+    <div class="faq-a">
+      <p>Navigate to the <strong>Connections</strong> page and click <strong>Onboard New Application</strong>. Enter your Prometheus URL, add your services with SLO targets, and click <strong>Save &amp; Activate</strong>. The governor will switch from synthetic data to real telemetry immediately. See <a href="#onboarding" style="color: var(--blue-400);">Section 3: Onboarding</a> for the full walkthrough.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">The governor shows "critical" regime by default</div>
+    <div class="faq-a">
+      <p>This is normal when running in demo mode with synthetic telemetry data. The demo generator produces varying conditions including degraded and critical regimes to showcase the full range of system behavior. Once you connect real infrastructure, the regime will reflect your actual system health.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">LLM reasoning is not working or shows generic responses</div>
+    <div class="faq-a">
+      <p>Make sure you have configured an API key for your LLM provider. You can do this in two ways:</p>
+      <ul>
+        <li>Set <code>ANTHROPIC_API_KEY</code> or <code>OPENAI_API_KEY</code> in your <code>.env</code> file and restart the backend.</li>
+        <li>Add the API key through the <strong>Connections</strong> page in the LLM Configuration step when onboarding your application.</li>
+      </ul>
+      <p>Verify the key is valid by using the <strong>Test Connection</strong> feature on the Connections page.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">How do I connect my Kubernetes cluster?</div>
+    <div class="faq-a">
+      <p>When creating or editing a connection, enable the Kubernetes toggle in <strong>Step 4</strong> of the onboarding wizard. Provide either:</p>
+      <ul>
+        <li>A <code>kubeconfig</code> path (for external access)</li>
+        <li>Enable "In-Cluster" mode (when SCL-Governor is running inside the same K8s cluster)</li>
+      </ul>
+      <p>Specify the target namespace and optional context name. SCL-Governor needs RBAC permissions for deployments, pods, and horizontal pod autoscalers.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">Can I monitor multiple applications?</div>
+    <div class="faq-a">
+      <p>Yes. Create multiple connections on the Connections page, each with its own Prometheus source, services, and configuration. You can activate different connections to switch the governor's focus. Each connection maintains its own SLO targets and service list.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">The frontend is not connecting to the backend</div>
+    <div class="faq-a">
+      <p>Verify the backend is running at <code>http://localhost:8000</code>. Check the browser developer console for CORS errors. If using Docker Compose (<code>make up</code>), all services should be networked automatically. If running with <code>make dev</code>, ensure both the backend (port 8000) and frontend (port 5173 or 3000) are started.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">How do I adjust how aggressively the governor acts?</div>
+    <div class="faq-a">
+      <p>Go to <strong>Settings</strong> and adjust two things:</p>
+      <ul>
+        <li><strong>Confidence Thresholds</strong> &mdash; Raise the "high" threshold to require more certainty before autonomous action.</li>
+        <li><strong>Safety Constraints</strong> &mdash; Lower the max blast radius and max concurrent changes to limit the scope of any single action.</li>
+        <li><strong>Cycle Interval</strong> &mdash; Increase the cycle interval to give the system more time between decisions.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">Where are the logs?</div>
+    <div class="faq-a">
+      <p>Backend logs are written to stdout in structured JSON format. When using Docker, view them with <code>make logs</code> or <code>make logs-backend</code>. The backend uses structured logging with context fields for easy filtering and analysis.</p>
+    </div>
+  </div>
+</section>
+
+</div><!-- end .content -->
+</main>
+
+<!-- ==================== FOOTER ==================== -->
+<footer class="page-footer">
+  <div class="footer-badge">Built with Claude AI</div>
+  <div class="footer-links">
+    <a href="./README.md">README</a>
+    <a href="http://localhost:8000/docs" target="_blank">API Docs (Swagger)</a>
+    <a href="http://localhost:8000/redoc" target="_blank">API Docs (ReDoc)</a>
+    <a href="http://localhost:3000" target="_blank">Open Dashboard</a>
+  </div>
+</footer>
+
+</body>
+</html>

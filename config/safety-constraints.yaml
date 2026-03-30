@@ -1,0 +1,41 @@
+# Hard Safety Constraints
+hard_constraints:
+  minimum_replicas:
+    default: 2
+    overrides:
+      payment-service: 3
+      checkout-service: 3
+
+  budget_ceiling:
+    hourly_max_usd: 50.00
+    daily_max_usd: 1000.00
+
+  blast_radius:
+    max_traffic_percent: 25
+    max_services_affected: 5
+
+  rate_of_change:
+    max_scale_per_minute: 5
+    max_config_changes_per_hour: 10
+
+  cooldown:
+    default_seconds: 120
+    scaling_seconds: 180
+    config_change_seconds: 300
+
+  human_escalation:
+    confidence_minimum: 0.40
+    always_escalate:
+      - database_topology_change
+      - production_data_migration
+      - security_policy_change
+
+# Soft Constraints
+soft_constraints:
+  prefer_reversible: true
+  prefer_minimal: true
+  prefer_gradual: true
+  prefer_cheap: true
+  anti_oscillation:
+    window_minutes: 10
+    max_reversals: 2

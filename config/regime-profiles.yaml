@@ -1,0 +1,50 @@
+regimes:
+  normal:
+    description: "Standard operating parameters"
+    thresholds:
+      latency_p99_breach_ratio: 0.7
+      error_rate_percent: 0.5
+      resource_utilization_percent: 70
+    cycle_interval_multiplier: 1.0
+    simulation_scenarios_multiplier: 1.0
+    max_blast_radius: 0.25
+
+  degraded:
+    description: "Partial service impairment detected"
+    thresholds:
+      latency_p99_breach_ratio: 0.85
+      error_rate_percent: 2.0
+      resource_utilization_percent: 85
+    cycle_interval_multiplier: 0.5
+    simulation_scenarios_multiplier: 1.5
+    max_blast_radius: 0.20
+
+  critical:
+    description: "Active incident, SLA breach imminent or active"
+    thresholds:
+      latency_p99_breach_ratio: 1.0
+      error_rate_percent: 5.0
+      resource_utilization_percent: 95
+    cycle_interval_multiplier: 0.2
+    simulation_scenarios_multiplier: 3.0
+    max_blast_radius: 0.10
+
+  recovery:
+    description: "Post-incident stabilization"
+    thresholds:
+      latency_p99_breach_ratio: 0.6
+      error_rate_percent: 0.3
+      resource_utilization_percent: 60
+    cycle_interval_multiplier: 0.75
+    simulation_scenarios_multiplier: 1.0
+    max_blast_radius: 0.15
+
+  maintenance:
+    description: "Planned change window"
+    thresholds:
+      latency_p99_breach_ratio: 0.9
+      error_rate_percent: 3.0
+      resource_utilization_percent: 90
+    cycle_interval_multiplier: 1.0
+    simulation_scenarios_multiplier: 0.5
+    max_blast_radius: 0.30

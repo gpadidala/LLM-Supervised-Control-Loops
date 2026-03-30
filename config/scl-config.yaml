@@ -1,0 +1,92 @@
+# SCL-Governor Configuration
+governor:
+  cycle_interval_seconds: 15
+  max_cycle_history: 200
+  state_history_size: 1000
+  decision_history_size: 500
+
+telemetry:
+  sources:
+    infrastructure:
+      enabled: true
+      queries:
+        cpu_utilization: 'avg(rate(container_cpu_usage_seconds_total{namespace!="kube-system"}[5m])) by (namespace, pod) * 100'
+        memory_utilization: 'avg(container_memory_usage_bytes{namespace!="kube-system"} / container_spec_memory_limit_bytes) by (namespace, pod) * 100'
+        disk_iops: 'rate(node_disk_io_time_seconds_total[5m])'
+        network_throughput: 'sum(rate(container_network_transmit_bytes_total[5m])) by (namespace)'
+        pod_count: 'count(kube_pod_status_phase{phase="Running"}) by (namespace)'
+        node_health: 'kube_node_status_condition{condition="Ready",status="true"}'
+    application:
+      enabled: true
+      queries:
+        request_rate: 'sum(rate(http_requests_total[5m])) by (service)'
+        latency_p50: 'histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service))'
+        latency_p95: 'histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service))'
+        latency_p99: 'histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service))'
+        error_rate_4xx: 'sum(rate(http_requests_total{status=~"4.."}[5m])) by (service) / sum(rate(http_requests_total[5m])) by (service) * 100'
+        error_rate_5xx: 'sum(rate(http_requests_total{status=~"5.."}[5m])) by (service) / sum(rate(http_requests_total[5m])) by (service) * 100'
+        queue_depth: 'sum(rabbitmq_queue_messages) by (queue)'
+        connection_pool_utilization: 'hikaricp_connections_active / hikaricp_connections_max * 100'
+    business:
+      enabled: true
+      queries:
+        active_users: 'sum(active_user_sessions_total)'
+        transaction_throughput: 'sum(rate(business_transactions_total[5m]))'
+        sla_compliance: 'sum(rate(http_requests_total{status=~"2.."}[5m])) / sum(rate(http_requests_total[5m])) * 100'
+    network:
+      enabled: true
+      queries:
+        inter_service_latency: 'histogram_quantile(0.99, sum(rate(istio_request_duration_milliseconds_bucket[5m])) by (le, source_workload, destination_workload))'
+        dns_resolution_time: 'avg(coredns_dns_request_duration_seconds_sum / coredns_dns_request_duration_seconds_count)'
+        tcp_retransmits: 'rate(node_netstat_Tcp_RetransSegs[5m])'
+    cost:
+      enabled: true
+      queries:
+        cloud_spend_rate: 'sum(cloud_cost_per_hour)'
+        reserved_utilization: 'sum(reserved_instance_utilization_percent)'
+
+prediction:
+  horizons:
+    - seconds: 300
+      label: "5min"
+    - seconds: 900
+      label: "15min"
+    - seconds: 3600
+      label: "1hr"
+  ensemble_weights:
+    statistical: 0.4
+    trend: 0.3
+    llm: 0.3
+
+simulation:
+  n_scenarios: 100
+  time_step_seconds: 5
+  sde_parameters:
+    mean_reversion_speed: 0.1
+    noise_scale: 0.05
+  alpha: 0.95  # for VaR/CVaR
+
+objective_weights:
+  normal:
+    performance: 0.30
+    cost: 0.20
+    risk: 0.20
+    stability: 0.15
+    business: 0.15
+  degraded:
+    performance: 0.40
+    cost: 0.10
+    risk: 0.25
+    stability: 0.10
+    business: 0.15
+  critical:
+    performance: 0.50
+    cost: 0.05
+    risk: 0.30
+    stability: 0.05
+    business: 0.10
+
+slo_targets:
+  latency_p99_ms: 800
+  error_rate_percent: 1.0
+  availability_percent: 99.9

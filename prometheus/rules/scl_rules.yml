@@ -1,0 +1,28 @@
+groups:
+  - name: scl_governor_rules
+    interval: 15s
+    rules:
+      - record: scl:cycle_duration_seconds
+        expr: histogram_quantile(0.95, rate(scl_cycle_duration_seconds_bucket[5m]))
+
+      - record: scl:prediction_accuracy
+        expr: 1 - avg(scl_prediction_error_ratio)
+
+      - record: scl:decision_confidence_avg
+        expr: avg(scl_decision_confidence)
+
+      - alert: SCLHighLatency
+        expr: histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m])) > 0.8
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Service {{ $labels.service }} p99 latency above SLO"
+
+      - alert: SCLGovernorStopped
+        expr: up{job="scl-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "SCL-Governor backend is down"
