@@ -93,19 +93,116 @@ class SafetyUpdate(BaseModel):
 
 @router.get("/")
 async def get_current_config() -> dict[str, Any]:
-    """Return the current SCL configuration (secrets redacted)."""
+    """Return the current SCL configuration in the ConfigData shape the frontend expects."""
     settings = get_settings()
-    data = settings.model_dump()
-    # Redact secrets
-    for key in (
-        "ANTHROPIC_API_KEY",
-        "OPENAI_API_KEY",
-        "PAGERDUTY_API_KEY",
-        "SLACK_WEBHOOK_URL",
-    ):
-        if data.get(key):
-            data[key] = "***REDACTED***"
-    return data
+    scl_yaml = _load_yaml(settings.SCL_CONFIG_PATH)
+    safety_yaml = _load_yaml(settings.SAFETY_CONFIG_PATH)
+
+    # Extract objective weights from YAML (prefer "normal" regime weights)
+    yaml_weights = scl_yaml.get("objective_weights", {})
+    normal_weights = yaml_weights.get("normal", yaml_weights)
+
+    # Extract safety hard constraints
+    hard = safety_yaml.get("hard_constraints", {})
+
+    governor = get_governor()
+
+    return {
+        "cycle_interval_seconds": settings.CONTROL_CYCLE_INTERVAL,
+        "objective_weights": {
+            "performance": normal_weights.get("performance", 0.30),
+            "cost": normal_weights.get("cost", 0.20),
+            "risk": normal_weights.get("risk", 0.20),
+            "stability": normal_weights.get("stability", 0.15),
+            "business": normal_weights.get("business", 0.15),
+        },
+        "confidence_thresholds": {
+            "high": settings.CONFIDENCE_THRESHOLD_HIGH,
+            "medium": settings.CONFIDENCE_THRESHOLD_MEDIUM,
+            "low": settings.CONFIDENCE_THRESHOLD_LOW,
+        },
+        "safety_constraints": {
+            "min_replicas": hard.get("minimum_replicas", {}).get("default", 2),
+            "budget_ceiling": hard.get("budget_ceiling", {}).get("daily_max_usd", 1000),
+            "max_blast_radius": settings.MAX_BLAST_RADIUS,
+            "max_concurrent_changes": hard.get("rate_of_change", {}).get("max_config_changes_per_hour", 10),
+            "cooldown_seconds": settings.COOLDOWN_SECONDS,
+        },
+        "connectors": {
+            "prometheus": await _check_prometheus(settings.PROMETHEUS_URL),
+            "kubernetes": governor.k8s is not None,
+            "llm": governor.llm.is_available,
+            "slack": bool(settings.SLACK_WEBHOOK_URL),
+            "pagerduty": bool(settings.PAGERDUTY_API_KEY),
+        },
+    }
+
+
+async def _check_prometheus(url: str) -> bool:
+    """Quick check if Prometheus is reachable."""
+    try:
+        import httpx
+        async with httpx.AsyncClient(timeout=httpx.Timeout(3.0)) as client:
+            resp = await client.get(f"{url}/-/healthy")
+            return resp.status_code == 200
+    except Exception:
+        return False
+
+
+@router.put("/")
+async def update_config(body: dict[str, Any]) -> dict[str, Any]:
+    """Update configuration from the frontend ConfigData shape.
+
+    Accepts the same shape returned by ``GET /``.  Maps the nested
+    structure back to the underlying YAML files and runtime settings.
+    """
+    settings = get_settings()
+    scl_config = _load_yaml(settings.SCL_CONFIG_PATH)
+    safety_config = _load_yaml(settings.SAFETY_CONFIG_PATH)
+    updated_keys: list[str] = []
+
+    # Objective weights
+    if "objective_weights" in body:
+        w = body["objective_weights"]
+        normal = scl_config.setdefault("objective_weights", {}).setdefault("normal", {})
+        for k in ("performance", "cost", "risk", "stability", "business"):
+            if k in w:
+                normal[k] = float(w[k])
+        updated_keys.append("objective_weights")
+
+    # Confidence thresholds
+    if "confidence_thresholds" in body:
+        t = body["confidence_thresholds"]
+        scl_config.setdefault("confidence_thresholds", {}).update(
+            {k: float(v) for k, v in t.items() if k in ("high", "medium", "low")}
+        )
+        updated_keys.append("confidence_thresholds")
+
+    # Safety constraints
+    if "safety_constraints" in body:
+        s = body["safety_constraints"]
+        hard = safety_config.setdefault("hard_constraints", {})
+        if "min_replicas" in s:
+            hard.setdefault("minimum_replicas", {})["default"] = int(s["min_replicas"])
+        if "budget_ceiling" in s:
+            hard.setdefault("budget_ceiling", {})["daily_max_usd"] = float(s["budget_ceiling"])
+        if "max_blast_radius" in s:
+            hard.setdefault("blast_radius", {})["max_traffic_percent"] = int(float(s["max_blast_radius"]) * 100)
+        if "cooldown_seconds" in s:
+            hard.setdefault("cooldown", {})["default_seconds"] = int(s["cooldown_seconds"])
+        updated_keys.append("safety_constraints")
+
+    # Cycle interval
+    if "cycle_interval_seconds" in body:
+        scl_config.setdefault("governor", {})["cycle_interval_seconds"] = int(body["cycle_interval_seconds"])
+        updated_keys.append("cycle_interval_seconds")
+
+    # Persist
+    _save_yaml(settings.SCL_CONFIG_PATH, scl_config)
+    _save_yaml(settings.SAFETY_CONFIG_PATH, safety_config)
+
+    log.info("config_updated", keys=updated_keys)
+    return {"status": "updated", "keys": updated_keys}
 
 
 @router.put("/weights")
